@@ -1,7 +1,9 @@
+// Footer component - displayed at bottom of every page
 const Footer = () => {
+  // CSS inline styles for the footer
   const footerStyle = {
-    color: 'green',
-    fontStyle: 'italic'
+    color: 'green',          // Green text color
+    fontStyle: 'italic'      // Italic font style
   }
 
   return (
@@ -14,4 +16,5 @@ const Footer = () => {
   )
 }
 
+// Export component for use in App
 export default Footer
