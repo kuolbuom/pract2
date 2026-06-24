@@ -1,3 +1,5 @@
+import { Alert } from "@mui/material"
+
 // Component to display error or notification messages
 // Props: message (string to display or null)
 const Notification = ({ message }) => {
@@ -7,7 +9,7 @@ const Notification = ({ message }) => {
   }
 
   // Display message in a styled div (CSS class: 'error')
-  return <div className="error">{message}</div>
+  return <Alert style={{marginTop: 10, marginBottom: 10}} severity={message.type}>{message.text}</Alert>
 }
 
 // Export component for use in other files

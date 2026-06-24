@@ -2,6 +2,25 @@
 import { useState, useEffect } from 'react'
 // Import the notes service for API calls (to fetch, create, update, delete notes)
 import noteService from './services/notes'
+import styled from 'styled-components'
+import { AppBar, Button, Container, Toolbar } from '@mui/material'
+
+// Define styled components OUTSIDE the component
+const Page = styled.div`
+  padding: 1em;
+  background: papayawhip;
+`
+
+const Navigation = styled.div`
+  background: BurlyWood;
+  padding: 1em;
+`
+
+const StyledFooter = styled.div`
+  background: Chocolate;
+  padding: 1em;
+  margin-top: 1em;
+`
 
 // Import React Router components for navigation/routing
 import {
@@ -10,17 +29,19 @@ import {
   Route,                       // Individual route definition
   Link                         // Navigation links (doesn't reload page)
 } from 'react-router-dom'
-
-// Import components for different pages
 import Home from './components/Home'
-import Footer from './components/Footer'
 import Note from './components/Note'
 import NoteForm from './components/NoteForm'
 import NotesPage from './components/NotesPage'
+import Notification from './components/Notification'
 
 const App = () => {
   // State variable to store all notes and function to update it
   const [notes, setNotes] = useState([])
+  // Logged-in user state (null if not logged in) - lifted here so NoteForm can use it too
+  const [user, setUser] = useState(null)
+
+  const [notification, setNotification] = useState(null)
 
   // useEffect runs once when component mounts (empty [] dependency array)
   // It fetches all notes from the server and updates the state
@@ -33,11 +54,17 @@ const App = () => {
   // Function to create a new note
   // noteObject: the form data from user (title, content, etc.)
   const addNote = noteObject => {
+    // Attach the logged-in user to the note before saving
+    const noteWithUser = user
+      ? { ...noteObject, user: { username: user.username, name: user.name } }
+      : noteObject
     // Send the new note to the server via API
-    noteService.create(noteObject).then(returnedNote => {
+    noteService.create(noteWithUser).then(returnedNote => {
       // After server returns the created note (with an ID from database)
       // Add it to our state: ...notes (all existing) + [returnedNote] (new one)
       setNotes(notes.concat(returnedNote))
+      setNotification({ text: `Note '${returnedNote.content}' added successfully`, type: 'success' })
+      setTimeout(() => setNotification(null), 5000)
     })
   }
 
@@ -46,7 +73,7 @@ const App = () => {
   const toggleImportanceOf = id => {
     // Find the note object with matching ID
     const note = notes.find(n => n.id === id)
-    
+
     // If note doesn't exist, stop execution
     if (!note) {
       return
@@ -82,49 +109,66 @@ const App = () => {
     padding: 5
   }
 
+  const style = { '&:hover': {bgcolor: 'rgba(255, 255, 255, 0.3)'} }
+
   return (
     // Router wrapper provides routing context for the entire app
-    <Router>
-      <div>
-        {/* Navigation links - Link doesn't reload page like <a> tags do */}
-        <Link style={padding} to="/">home</Link>
-        <Link style={padding} to="/notes">notes</Link>
-        <Link style={padding} to="/create">new note</Link>
-      </div>
+    <Container>
+      <Router>
+        <Page>
+          {/* Navigation links - Link doesn't reload page like <a> tags do */}
+          <Navigation>
+            {/* <AppBar position="static">
+              <Toolbar> */}
+                <Button color='inherit' component={Link} to="/" sx={style}>home</Button>
+                <Button color='inherit' component={Link} to="/notes" sx={style}>notes</Button>
+                <Button color='inherit' component={Link} to="/create" sx={style}>new note</Button>
+              {/* </Toolbar>
+            </AppBar> */}
+          </Navigation>
 
-      {/* Routes container - renders component matching current URL path */}
-      <Routes>
-        {/* /notes path - shows all notes list */}
-        <Route
-          path="/notes"
-          element={<NotesPage notes={notes} />}
-        />
-        
-        {/* /notes/:id path - shows single note by ID (colon means dynamic parameter) */}
-        <Route
-          path="/notes/:id"
-          element={
-            <Note
-              notes={notes}
-              toggleImportanceOf={toggleImportanceOf}
-              deleteNote={deleteNote}
+          <Notification message={notification} />
+
+          {/* Routes container - renders component matching current URL path */}
+          <Routes>
+            {/* /notes path - shows all notes list */}
+            <Route
+              path="/notes"
+              element={<NotesPage
+                 notes={notes}
+                 user={user}
+                 setUser={setUser} />}
             />
-          }
-        />
-        
-        {/* /create path - form to add a new note */}
-        <Route
-          path="/create"
-          element={<NoteForm createNote={addNote} />}
-        />
-        
-        {/* / path (root) - home page, matches all unmatched routes */}
-        <Route path="/" element={<Home />} />
-      </Routes>
 
-      {/* Footer component shown on every page */}
-      <Footer />
-    </Router>
+            {/* /notes/:id path - shows single note by ID (colon means dynamic parameter) */}
+            <Route
+              path="/notes/:id"
+              element={
+                <Note
+                  notes={notes}
+                  toggleImportanceOf={toggleImportanceOf}
+                  deleteNote={deleteNote}
+                />
+              }
+            />
+
+            {/* /create path - form to add a new note */}
+            <Route
+              path="/create"
+              element={<NoteForm createNote={addNote} user={user} />}
+            />
+
+            {/* / path (root) - home page, matches all unmatched routes */}
+            <Route path="/" element={<Home />} />
+          </Routes>
+
+          {/* Footer component shown on every page */}
+          <StyledFooter>
+            Note app, Department of Computer Science, University of Helsinki 2026
+          </StyledFooter>
+        </Page>
+      </Router>
+    </Container>
   )
 }
 

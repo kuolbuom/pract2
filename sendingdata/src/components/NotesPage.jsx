@@ -10,8 +10,8 @@ import loginService from '../services/login'
 import noteService from '../services/notes'
 
 // Main page for displaying and managing notes
-// Props: notes (array of all notes from App)
-const NotesPage = ({ notes }) => {
+// Props: notes (array of all notes from App), user (logged-in user), setUser (update user state)
+const NotesPage = ({ notes, user, setUser }) => {
   // Filter toggle state: true = show all notes, false = show only important notes
   const [showAll, setShowAll] = useState(true)
   // Error message state for login failures
@@ -19,8 +19,6 @@ const NotesPage = ({ notes }) => {
   // Form input states for login
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  // Logged-in user state (null if not logged in)
-  const [user, setUser] = useState(null)
 
   // Handle login submission
   const handleLogin = async event => {
