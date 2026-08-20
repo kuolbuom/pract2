@@ -1,0 +1,10 @@
+//The tsconfig.json file is used to define how the TypeScript compiler should interpret the code, how strictly the compiler should work, which files to watch or ignore, and much more(opens in a new tab).
+{
+  "compilerOptions": {
+    "noImplicitAny": false, // disable the compiler option
+    "noEmit": true, //since we are only going to use the TypeScript compiler for checking.
+    "types": ["node"]
+  },
+  "include": ["*.ts"],
+  "exclude": ["node_modules", "fs-typescript"]
+}
