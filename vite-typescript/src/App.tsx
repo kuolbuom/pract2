@@ -1,78 +1,177 @@
-//type declarations for Header
+//This contains the properties that every course part has
+interface CoursePartBase {
+  name: string;
+  exerciseCount: number;
+}
+
+//The keyword extends means: Take everything from CoursePartBase and add something new.
+interface CoursePartDescription extends CoursePartBase {
+  description: string;
+}
+
+//This inherits everything from CoursePartDescription. This does not mean any string. It means the value can only be: "basic"
+interface CoursePartBasic extends CoursePartDescription {
+  //The kind property allows TypeScript to identify which type of CoursePart it is.
+  kind: "basic";
+}
+
+interface CoursePartGroup extends CoursePartBase {
+  groupProjectCount: number;
+  kind: "group";
+}
+
+interface CoursePartBackground extends CoursePartDescription {
+  backgroundMaterial: string;
+  kind: "background";
+}
+
+interface CoursePartSpecial extends CoursePartDescription {
+  requirements: string[];
+  kind: "special";
+}
+
+//This is called a union type.
+type CoursePart =
+  | CoursePartBasic
+  | CoursePartGroup
+  | CoursePartBackground
+  | CoursePartSpecial;
+
+// Exhaustive type checking
+const assertNever = (value: never): never => {
+  throw new Error(`Unhandled case: ${JSON.stringify(value)}`);
+};
+
+// Part component
+interface PartProps {
+  coursePart: CoursePart;
+}
+
+const Part = ({ coursePart }: PartProps) => {
+  switch (coursePart.kind) {
+    case "basic":
+      return (
+        <div>
+          <p>
+            <strong>{coursePart.name}</strong> {coursePart.exerciseCount}
+          </p>
+          <p>{coursePart.description}</p>
+        </div>
+      );
+
+    case "group":
+      return (
+        <div>
+          <p>
+            <strong>{coursePart.name}</strong> {coursePart.exerciseCount}
+          </p>
+          <p>project exercises: {coursePart.groupProjectCount}</p>
+        </div>
+      );
+
+    case "background":
+      return (
+        <div>
+          <p>
+            <strong>{coursePart.name}</strong> {coursePart.exerciseCount}
+          </p>
+          <p>{coursePart.description}</p>
+          <p>submit to {coursePart.backgroundMaterial}</p>
+        </div>
+      );
+
+    case "special":
+      return (
+        <div>
+          <p>
+            <strong>{coursePart.name}</strong> {coursePart.exerciseCount}
+          </p>
+          <p>{coursePart.description}</p>
+          <p>required skills: {coursePart.requirements.join(", ")}</p>
+        </div>
+      );
+
+    default:
+      return assertNever(coursePart);
+  }
+};
+
+// Header
 interface HeaderProps {
   name: string;
 }
-//Header component that takes in props of type HeaderProps and returns a JSX element
+
 const Header = (props: HeaderProps) => {
-  console.log("Header props:", props);
   return <h1>{props.name}</h1>;
 };
 
-//type declarations for Content
+// Content
 interface ContentProps {
-  courseParts: {
-    name: string;
-    exerciseCount: number;
-  }[];
+  courseParts: CoursePart[];
 }
 
-//Content component that takes in props of type ContentProps and returns a JSX element
-const Content = (props: ContentProps) => {
-  console.log("Content props:", props);
+const Content = ({ courseParts }: ContentProps) => {
   return (
     <div>
-      <p>
-        {props.courseParts[0].name} {props.courseParts[0].exerciseCount}
-      </p>
-      <p>
-        {props.courseParts[1].name} {props.courseParts[1].exerciseCount}
-      </p>
-      <p>
-        {props.courseParts[2].name} {props.courseParts[2].exerciseCount}
-      </p>
+      {courseParts.map((coursePart) => (
+        <Part key={coursePart.name} coursePart={coursePart} />
+      ))}
     </div>
   );
 };
 
-//type declarations for Total
+// Total
 interface TotalProps {
-  courseParts: {
-    name: string;
-    exerciseCount: number;
-  }[];
+  courseParts: CoursePart[];
 }
 
-//Total component that takes in props of type TotalProps and returns a JSX element
-const Total = (props: TotalProps) => {
-  console.log("Total props:", props);
-  const totalExercises = props.courseParts.reduce(
+const Total = ({ courseParts }: TotalProps) => {
+  const totalExercises = courseParts.reduce(
     (sum, part) => sum + part.exerciseCount,
     0,
   );
+
   return <p>Number of exercises {totalExercises}</p>;
 };
 
+// App
 const App = () => {
   const courseName = "Half Stack application development";
-  const courseParts = [
+
+  const courseParts: CoursePart[] = [
     {
       name: "Fundamentals",
       exerciseCount: 10,
+      description: "This is the leisured course part",
+      kind: "basic",
+    },
+    {
+      name: "Advanced",
+      exerciseCount: 7,
+      description: "This is the hard part",
+      kind: "basic",
     },
     {
       name: "Using props to pass data",
       exerciseCount: 7,
+      groupProjectCount: 3,
+      kind: "group",
     },
     {
       name: "Deeper type usage",
       exerciseCount: 14,
+      description: "Confusing description",
+      backgroundMaterial: "https://fake-exercise-submit.made-up-url.dev",
+      kind: "background",
+    },
+    {
+      name: "Backend development",
+      exerciseCount: 21,
+      description: "Typing the backend",
+      requirements: ["nodejs", "jest"],
+      kind: "special",
     },
   ];
-
-  // const totalExercises = courseParts.reduce(
-  //   (sum, part) => sum + part.exerciseCount,
-  //   0,
-  // );
 
   return (
     <div>
